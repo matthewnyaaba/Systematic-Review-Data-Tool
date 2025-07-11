@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systematic Review Data Extraction Tool - GenAI Assessment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Header Styles */
+        .header {
+            background: #1a1a2e;
+            color: white;
+            padding: 2rem 3rem;
+            border-bottom: 4px solid #0f4c75;
+        }
+
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.85;
+        }
+
+        /* Navigation Styles */
+        .navigation {
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0 2rem;
+        }
+
+        .nav-list {
+            display: flex;
+            flex-wrap: wrap;
+            list-style: none;
+            gap: 1rem;
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #495057;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: block;
+        }
+
+        .nav-link:hover {
+            background: #e9ecef;
+            color: #0f4c75;
+        }
+
+        .nav-link.active {
+            background: #0f4c75;
+            color: white;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: #f8f9fa;
+            padding: 1rem 3rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #0f4c75;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        /* Form Content */
+        .form-content {
+            padding: 2rem 3rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+            scroll-margin-top: 120px;
+        }
+
+        .section-title {
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #0f4c75;
+        }
+
+        .subsection-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #495057;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9375rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9375rem;
+            transition: border-color 0.15s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0f4c75;
+            box-shadow: 0 0 0 3px rgba(15, 76, 117, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Checkbox Styles */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .checkbox-item:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.625rem;
+            margin-top: 0.125rem;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            font-weight: normal;
+            font-size: 0.875rem;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        /* Required Field Indicator */
+        .required {
+            color: #dc3545;
+            font-weight: normal;
+        }
+
+        /* Note Text */
+        .note-text {
+            font-size: 0.8125rem;
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 0.375rem;
+        }
+
+        /* Button Styles */
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #0f4c75;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #0a3a5a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 76, 117, 0.2);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Message Styles */
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1.5rem;
+            border: 1px solid;
+        }
+
+        .message.success {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-color: #bee5eb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #0f4c75;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-content {
+                padding: 1.5rem;
+            }
+
+            .navigation {
+                padding: 0 1rem;
+            }
+
+            .nav-list {
+                font-size: 0.8125rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .navigation,
+            .progress-container,
+            .button-container {
+                display: none;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Systematic Review Data Extraction Tool</h1>
+            <p>GenAI-Based Assessment Generation Studies</p>
+        </div>
+
+        <nav class="navigation">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="#study-identification" class="nav-link">Study Identification</a></li>
+                <li class="nav-item"><a href="#study-design" class="nav-link">Study Design</a></li>
+                <li class="nav-item"><a href="#educational-context" class="nav-link">Educational Context</a></li>
+                <li class="nav-item"><a href="#assessment-characteristics" class="nav-link">Assessment</a></li>
+                <li class="nav-item"><a href="#ai-implementation" class="nav-link">AI Implementation</a></li>
+                <li class="nav-item"><a href="#prompt-strategy" class="nav-link">Prompt Strategy</a></li>
+                <li class="nav-item"><a href="#cultural-validity" class="nav-link">Cultural Validity</a></li>
+                <li class="nav-item"><a href="#bias-identification" class="nav-link">Bias Identification</a></li>
+                <li class="nav-item"><a href="#validation" class="nav-link">Validation</a></li>
+                <li class="nav-item"><a href="#quality-assessment" class="nav-link">Quality Assessment</a></li>
+                <li class="nav-item"><a href="#additional-notes" class="nav-link">Additional Notes</a></li>
+            </ul>
+        </nav>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">0% Complete</div>
+        </div>
+
+        <div class="form-content">
+            <form id="reviewForm">
+                <!-- Study Identification & Context -->
+                <section id="study-identification" class="section">
+                    <h2 class="section-title">Study Identification & Context</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="studyId">Study ID <span class="required">*</span></label>
+                            <input type="text" id="studyId" name="studyId" placeholder="e.g., Chauhan_2025_001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="year">Year <span class="required">*</span></label>
+                            <select id="year" name="year" required>
+                                <option value="">Select Year</option>
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                                <option value="2023">2023</option>
+                                <option value="2022">2022</option>
+                                <option value="2021">2021</option>
+                                <option value="2020">2020</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title">Paper Title <span class="required">*</span></label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="authors">Authors <span class="required">*</span></label>
+                        <input type="text" id="authors" name="authors" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sourceAvailability">Source/Availability</label>
+                        <select id="sourceAvailability" name="sourceAvailability">
+                            <option value="">Select Source Type</option>
+                            <option value="Peer-reviewed journal">Peer-reviewed journal</option>
+                            <option value="Conference proceeding">Conference proceeding</option>
+                            <option value="Preprint">Preprint</option>
+                            <option value="Dissertation">Dissertation</option>
+                            <option value="Technical report">Technical report</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Study Design & Methodology -->
+                <section id="study-design" class="section">
+                    <h2 class="section-title">Study Design & Methodology</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="studyDesign">Study Design <span class="required">*</span></label>
+                            <select id="studyDesign" name="studyDesign" required>
+                                <option value="">Select Design</option>
+                                <option value="Randomized controlled trial">Randomized controlled trial</option>
+                                <option value="Crossover design">Crossover design</option>
+                                <option value="Pre-post comparison">Pre-post comparison</option>
+                                <option value="Comparative study (AI vs. human)">Comparative study (AI vs. human)</option>
+                                <option value="Case study">Case study</option>
+                                <option value="Pilot study">Pilot study</option>
+                                <option value="Observational study">Observational study</option>
+                                <option value="Mixed methods">Mixed methods</option>
+                                <option value="Theoretical/Conceptual framework">Theoretical/Conceptual framework</option>
+                                <option value="Systematic review/Meta-analysis">Systematic review/Meta-analysis</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="researchApproach">Research Approach</label>
+                            <select id="researchApproach" name="researchApproach">
+                                <option value="">Select Approach</option>
+                                <option value="Quantitative">Quantitative</option>
+                                <option value="Qualitative">Qualitative</option>
+                                <option value="Mixed methods">Mixed methods</option>
+                                <option value="Theoretical">Theoretical</option>
+                                <option value="Descriptive">Descriptive</option>
+                                <option value="Experimental">Experimental</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3 class="subsection-title">Empirical Study Sample</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sampleSize">Sample Size</label>
+                            <select id="sampleSize" name="sampleSize">
+                                <option value="">Select Sample Size</option>
+                                <option value="1-25">1-25</option>
+                                <option value="26-50">26-50</option>
+                                <option value="51-100">51-100</option>
+                                <option value="101-250">101-250</option>
+                                <option value="250+">250+</option>
+                                <option value="Not applicable">Not applicable</option>
+                                <option value="Not specified">Not specified</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="primaryParticipants">Primary Participants</label>
+                            <select id="primaryParticipants" name="primaryParticipants">
+                                <option value="">Select Participants</option>
+                                <option value="Students">Students</option>
+                                <option value="Educators">Educators</option>
+                                <option value="Experts">Experts</option>
+                                <option value="AI systems">AI systems</option>
+                                <option value="Mixed">Mixed</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="participantDemographics">Participant Demographics</label>
+                            <textarea id="participantDemographics" name="participantDemographics" placeholder="Age, gender, ethnicity, SES, etc."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="geographicLocation">Geographic Location</label>
+                            <input type="text" id="geographicLocation" name="geographicLocation" placeholder="Country, region, urban/rural">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recruitmentMethod">Recruitment Method</label>
+                        <input type="text" id="recruitmentMethod" name="recruitmentMethod" placeholder="How participants were recruited">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dataCollectionMethods">Data Collection Methods</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="dcm1" name="dataCollectionMethods" value="Assessment administration to students">
+                                <label for="dcm1">Assessment administration to students</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="dcm2" name="dataCollectionMethods" value="Expert panel evaluation">
+                                <label for="dcm2">Expert panel evaluation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="dcm3" name="dataCollectionMethods" value="Survey/questionnaire">
+                                <label for="dcm3">Survey/questionnaire</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="dcm4" name="dataCollectionMethods" value="Interview">
+                                <label for="dcm4">Interview</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="dcm5" name="dataCollectionMethods" value="Focus groups">
+                                <label for="dcm5">Focus groups</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="dcm6" name="dataCollectionMethods" value="Observation">
+                                <label for="dcm6">Observation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="dcm7" name="dataCollectionMethods" value="Document analysis">
+                                <label for="dcm7">Document analysis</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="dcm8" name="dataCollectionMethods" value="Psychometric analysis">
+                                <label for="dcm8">Psychometric analysis</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="dcm9" name="dataCollectionMethods" value="Comparative testing">
+                                <label for="dcm9">Comparative testing</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="dcm10" name="dataCollectionMethods" value="Other">
+                                <label for="dcm10">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                        <p class="note-text">Select all applicable data collection methods used in the study</p>
+                    </div>
+                </section>
+
+                <!-- Educational Context -->
+                <section id="educational-context" class="section">
+                    <h2 class="section-title">Educational Context</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subjectDomain">Subject Domain <span class="required">*</span></label>
+                            <select id="subjectDomain" name="subjectDomain" required>
+                                <option value="">Select Domain</option>
+                                <option value="Science">Science (Physics, Chemistry, Biology, Earth Science)</option>
+                                <option value="Mathematics">Mathematics (Algebra, Geometry, Calculus, Statistics)</option>
+                                <option value="Language Arts">Language Arts (Reading, Writing, Literature, ESL)</option>
+                                <option value="Medical Education">Medical Education (Anatomy, Physiology, Clinical Skills)</option>
+                                <option value="Computer Science">Computer Science/Programming</option>
+                                <option value="Social Studies">Social Studies/History</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Business">Business/Finance</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <p class="note-text">Select primary domain; note secondary domains in comments</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="gradeLevel">Grade Level</label>
+                            <select id="gradeLevel" name="gradeLevel">
+                                <option value="">Select Grade Level</option>
+                                <option value="Early Elementary (K-2)">Early Elementary (K-2)</option>
+                                <option value="Elementary (3-5)">Elementary (3-5)</option>
+                                <option value="Middle School (6-8)">Middle School (6-8)</option>
+                                <option value="High School (9-12)">High School (9-12)</option>
+                                <option value="Undergraduate">Undergraduate</option>
+                                <option value="Graduate/Professional">Graduate/Professional</option>
+                                <option value="Adult Education">Adult Education</option>
+                                <option value="Mixed Levels">Mixed Levels</option>
+                                <option value="Not Specified">Not Specified</option>
+                            </select>
+                            <p class="note-text">Document specific grade levels if mixed (e.g., "Grades 6-8 focus")</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Assessment Characteristics -->
+                <section id="assessment-characteristics" class="section">
+                    <h2 class="section-title">Assessment Characteristics</h2>
+
+                    <div class="form-group">
+                        <label for="itemType">Item Type</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it1" name="itemType" value="Multiple Choice Questions (MCQs)">
+                                <label for="it1">Multiple Choice Questions (MCQs)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it2" name="itemType" value="True/False">
+                                <label for="it2">True/False</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it3" name="itemType" value="Short Answer/Fill-in-blank">
+                                <label for="it3">Short Answer/Fill-in-blank</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it4" name="itemType" value="Essay/Extended Response">
+                                <label for="it4">Essay/Extended Response</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it5" name="itemType" value="Performance-based Tasks">
+                                <label for="it5">Performance-based Tasks</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it6" name="itemType" value="Scenario-based Questions">
+                                <label for="it6">Scenario-based Questions</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it7" name="itemType" value="Constructed Response">
+                                <label for="it7">Constructed Response</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it8" name="itemType" value="Matching Items">
+                                <label for="it8">Matching Items</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it9" name="itemType" value="Ordering/Sequencing">
+                                <label for="it9">Ordering/Sequencing</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it10" name="itemType" value="Other">
+                                <label for="it10">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                        <p class="note-text">Check all applicable; specify unique formats in notes</p>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="numberOfItems">Number of Items</label>
+                            <select id="numberOfItems" name="numberOfItems">
+                                <option value="">Select Range</option>
+                                <option value="1-10 items">1-10 items</option>
+                                <option value="11-25 items">11-25 items</option>
+                                <option value="26-50 items">26-50 items</option>
+                                <option value="51-100 items">51-100 items</option>
+                                <option value="101-250 items">101-250 items</option>
+                                <option value="250+ items">250+ items</option>
+                                <option value="Not specified">Not specified</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="exactNumberItems">Exact Number (if known)</label>
+                            <input type="number" id="exactNumberItems" name="exactNumberItems" placeholder="e.g., 60">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="purposeOfAssessment">Purpose of Assessment</label>
+                        <select id="purposeOfAssessment" name="purposeOfAssessment">
+                            <option value="">Select Purpose</option>
+                            <option value="Formative Assessment">Formative Assessment</option>
+                            <option value="Summative Assessment">Summative Assessment</option>
+                            <option value="Diagnostic Assessment">Diagnostic Assessment</option>
+                            <option value="Placement Assessment">Placement Assessment</option>
+                            <option value="Competency/Certification">Competency/Certification</option>
+                            <option value="Practice/Review">Practice/Review</option>
+                            <option value="Research Instrument">Research Instrument</option>
+                            <option value="Mixed Purposes">Mixed Purposes</option>
+                            <option value="Not Specified">Not Specified</option>
+                        </select>
+                        <p class="note-text">Document specific learning objectives if provided</p>
+                    </div>
+                </section>
+
+                <!-- AI Implementation Details -->
+                <section id="ai-implementation" class="section">
+                    <h2 class="section-title">AI Implementation Details</h2>
+
+                    <div class="form-group">
+                        <label for="technologiesApproaches">Technologies/Approaches</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ta1" name="technologiesApproaches" value="ChatGPT (GPT-3.5)">
+                                <label for="ta1">ChatGPT (GPT-3.5)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ta2" name="technologiesApproaches" value="ChatGPT (GPT-4)">
+                                <label for="ta2">ChatGPT (GPT-4)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ta3" name="technologiesApproaches" value="GPT-4o">
+                                <label for="ta3">GPT-4o</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ta4" name="technologiesApproaches" value="Claude (Anthropic)">
+                                <label for="ta4">Claude (Anthropic)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ta5" name="technologiesApproaches" value="Gemini (Google)">
+                                <label for="ta5">Gemini (Google)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ta6" name="technologiesApproaches" value="BERT-based models">
+                                <label for="ta6">BERT-based models</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ta7" name="technologiesApproaches" value="T5 models">
+                                <label for="ta7">T5 models</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ta8" name="technologiesApproaches" value="Custom fine-tuned models">
+                                <label for="ta8">Custom fine-tuned models</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ta9" name="technologiesApproaches" value="Multiple AI models compared">
+                                <label for="ta9">Multiple AI models compared</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ta10" name="technologiesApproaches" value="Other">
+                                <label for="ta10">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                        <p class="note-text">Include version numbers and specific configurations in additional notes</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="promptingStrategy">Input Structure/Prompting Strategy</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ps1" name="promptingStrategy" value="Template-based prompting">
+                                <label for="ps1">Template-based prompting</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ps2" name="promptingStrategy" value="Modular prompting">
+                                <label for="ps2">Modular prompting (structured components)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ps3" name="promptingStrategy" value="Iterative refinement">
+                                <label for="ps3">Iterative refinement</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ps4" name="promptingStrategy" value="Few-shot prompting">
+                                <label for="ps4">Few-shot prompting</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ps5" name="promptingStrategy" value="Zero-shot prompting">
+                                <label for="ps5">Zero-shot prompting</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ps6" name="promptingStrategy" value="Chain-of-thought prompting">
+                                <label for="ps6">Chain-of-thought prompting</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ps7" name="promptingStrategy" value="Cultural embedding prompts">
+                                <label for="ps7">Cultural embedding prompts</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ps8" name="promptingStrategy" value="Interactive dynamic prompts">
+                                <label for="ps8">Interactive dynamic prompts</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ps9" name="promptingStrategy" value="Rule-based prompts">
+                                <label for="ps9">Rule-based prompts</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ps10" name="promptingStrategy" value="Other">
+                                <label for="ps10">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                        <p class="note-text">Document prompt complexity and iteration cycles</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputVariables">Input Variables</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv1" name="inputVariables" value="Task description/objectives">
+                                <label for="iv1">Task description/objectives</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv2" name="inputVariables" value="Content specifications">
+                                <label for="iv2">Content specifications</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv3" name="inputVariables" value="Difficulty level requirements">
+                                <label for="iv3">Difficulty level requirements</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv4" name="inputVariables" value="Cultural context parameters">
+                                <label for="iv4">Cultural context parameters</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv5" name="inputVariables" value="Language specifications">
+                                <label for="iv5">Language specifications</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv6" name="inputVariables" value="Format constraints">
+                                <label for="iv6">Format constraints</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv7" name="inputVariables" value="Curriculum standards">
+                                <label for="iv7">Curriculum standards (NGSS, Common Core, etc.)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv8" name="inputVariables" value="Assessment rubrics">
+                                <label for="iv8">Assessment rubrics</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv9" name="inputVariables" value="Example items">
+                                <label for="iv9">Example items</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv10" name="inputVariables" value="Student demographic information">
+                                <label for="iv10">Student demographic information</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="iv11" name="inputVariables" value="Other">
+                                <label for="iv11">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                        <p class="note-text">Specify which curriculum standards or frameworks used</p>
+                    </div>
+                </section>
+
+                <!-- Prompt Strategy Details -->
+                <section id="prompt-strategy" class="section">
+                    <h2 class="section-title">Prompt Strategy Details</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="templateStructure">Template Structure</label>
+                            <select id="templateStructure" name="templateStructure">
+                                <option value="">Select Structure</option>
+                                <option value="Single-component prompt">Single-component prompt</option>
+                                <option value="2-3 component structure">2-3 component structure</option>
+                                <option value="4-5 component structure">4-5 component structure (like Chauhan's 5-element model)</option>
+                                <option value="6+ component structure">6+ component structure</option>
+                                <option value="No clear structure documented">No clear structure documented</option>
+                                <option value="Other/Complex structure">Other/Complex structure</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="developmentDuration">Development Duration</label>
+                            <select id="developmentDuration" name="developmentDuration">
+                                <option value="">Select Duration</option>
+                                <option value="Less than 1 week">Less than 1 week</option>
+                                <option value="1-2 weeks">1-2 weeks</option>
+                                <option value="3-4 weeks">3-4 weeks</option>
+                                <option value="1-2 months">1-2 months</option>
+                                <option value="More than 2 months">More than 2 months</option>
+                                <option value="Ongoing/continuous">Ongoing/continuous</option>
+                                <option value="Not specified">Not specified</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expertCollaboration">Expert Collaboration Model</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ec1" name="expertCollaboration" value="Subject matter experts">
+                                <label for="ec1">Subject matter experts</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ec2" name="expertCollaboration" value="AI/Technology specialists">
+                                <label for="ec2">AI/Technology specialists</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ec3" name="expertCollaboration" value="Cultural experts/community members">
+                                <label for="ec3">Cultural experts/community members</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ec4" name="expertCollaboration" value="Educational measurement specialists">
+                                <label for="ec4">Educational measurement specialists</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ec5" name="expertCollaboration" value="Curriculum specialists">
+                                <label for="ec5">Curriculum specialists</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ec6" name="expertCollaboration" value="Students/learners">
+                                <label for="ec6">Students/learners</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ec7" name="expertCollaboration" value="No expert collaboration documented">
+                                <label for="ec7">No expert collaboration documented</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ec8" name="expertCollaboration" value="Other">
+                                <label for="ec8">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                        <p class="note-text">Document number of experts and their qualifications in additional notes</p>
+                    </div>
+                </section>
+
+                <!-- Cultural Validity Elements -->
+                <section id="cultural-validity" class="section">
+                    <h2 class="section-title">Cultural Validity Elements</h2>
+
+                    <div class="form-group">
+                        <label for="culturalFramework">Cultural Framework Applied</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cf1" name="culturalFramework" value="Indigenous language integration">
+                                <label for="cf1">Indigenous language integration</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cf2" name="culturalFramework" value="Local knowledge systems inclusion">
+                                <label for="cf2">Local knowledge systems inclusion</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cf3" name="culturalFramework" value="Racial/ethnic consideration">
+                                <label for="cf3">Racial/ethnic consideration</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cf4" name="culturalFramework" value="Religious context awareness">
+                                <label for="cf4">Religious context awareness</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cf5" name="culturalFramework" value="Family/community engagement">
+                                <label for="cf5">Family/community engagement</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cf6" name="culturalFramework" value="Socioeconomic context">
+                                <label for="cf6">Socioeconomic context</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cf7" name="culturalFramework" value="Geographic/regional adaptation">
+                                <label for="cf7">Geographic/regional adaptation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cf8" name="culturalFramework" value="Epistemological diversity">
+                                <label for="cf8">Epistemological diversity</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cf9" name="culturalFramework" value="No specific cultural framework">
+                                <label for="cf9">No specific cultural framework</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cf10" name="culturalFramework" value="Other">
+                                <label for="cf10">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                        <p class="note-text">Document specific cultural theories or models used</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="languageAccessibility">Language Accessibility Measures</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="la1" name="languageAccessibility" value="Translation to native languages">
+                                <label for="la1">Translation to native languages</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="la2" name="languageAccessibility" value="Simplified language structures">
+                                <label for="la2">Simplified language structures</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="la3" name="languageAccessibility" value="Vocabulary adaptation">
+                                <label for="la3">Vocabulary adaptation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="la4" name="languageAccessibility" value="Cultural linguistic patterns">
+                                <label for="la4">Cultural linguistic patterns</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="la5" name="languageAccessibility" value="Multi-language options">
+                                <label for="la5">Multi-language options</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="la6" name="languageAccessibility" value="Visual/non-verbal supports">
+                                <label for="la6">Visual/non-verbal supports</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="la7" name="languageAccessibility" value="No language accessibility measures">
+                                <label for="la7">No language accessibility measures</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="la8" name="languageAccessibility" value="Other">
+                                <label for="la8">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="communityValidation">Community Validation</label>
+                        <select id="communityValidation" name="communityValidation">
+                            <option value="">Select Level</option>
+                            <option value="Extensive community involvement">Extensive community involvement</option>
+                            <option value="Moderate community consultation">Moderate community consultation</option>
+                            <option value="Limited community input">Limited community input</option>
+                            <option value="Cultural expert review only">Cultural expert review only</option>
+                            <option value="No community validation">No community validation</option>
+                            <option value="Not documented">Not documented</option>
+                        </select>
+                        <p class="note-text">Specify communities involved and validation processes in additional notes</p>
+                    </div>
+                </section>
+
+                <!-- Bias Identification & Recognition -->
+                <section id="bias-identification" class="section">
+                    <h2 class="section-title">Bias Identification & Recognition</h2>
+
+                    <div class="form-group">
+                        <label for="biasDetectionMethods">Bias Detection Methods</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bd1" name="biasDetectionMethods" value="Training data analysis">
+                                <label for="bd1">Training data analysis</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bd2" name="biasDetectionMethods" value="Demographic impact assessment">
+                                <label for="bd2">Demographic impact assessment</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bd3" name="biasDetectionMethods" value="Cultural representation review">
+                                <label for="bd3">Cultural representation review</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bd4" name="biasDetectionMethods" value="Expert bias evaluation">
+                                <label for="bd4">Expert bias evaluation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bd5" name="biasDetectionMethods" value="Student feedback analysis">
+                                <label for="bd5">Student feedback analysis</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bd6" name="biasDetectionMethods" value="Comparative bias analysis">
+                                <label for="bd6">Comparative bias analysis</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bd7" name="biasDetectionMethods" value="Algorithmic fairness metrics">
+                                <label for="bd7">Algorithmic fairness metrics</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bd8" name="biasDetectionMethods" value="Historical bias examination">
+                                <label for="bd8">Historical bias examination</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bd9" name="biasDetectionMethods" value="No bias detection documented">
+                                <label for="bd9">No bias detection documented</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bd10" name="biasDetectionMethods" value="Other">
+                                <label for="bd10">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="biasSourcesIdentified">Bias Sources Identified</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bs1" name="biasSourcesIdentified" value="Training data bias">
+                                <label for="bs1">Training data bias</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bs2" name="biasSourcesIdentified" value="Algorithm design bias">
+                                <label for="bs2">Algorithm design bias</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bs3" name="biasSourcesIdentified" value="User interaction bias">
+                                <label for="bs3">User interaction bias</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bs4" name="biasSourcesIdentified" value="Cultural representation bias">
+                                <label for="bs4">Cultural representation bias</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bs5" name="biasSourcesIdentified" value="Language bias">
+                                <label for="bs5">Language bias</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bs6" name="biasSourcesIdentified" value="Socioeconomic bias">
+                                <label for="bs6">Socioeconomic bias</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bs7" name="biasSourcesIdentified" value="Gender bias">
+                                <label for="bs7">Gender bias</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bs8" name="biasSourcesIdentified" value="Racial/ethnic bias">
+                                <label for="bs8">Racial/ethnic bias</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bs9" name="biasSourcesIdentified" value="No bias sources identified">
+                                <label for="bs9">No bias sources identified</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bs10" name="biasSourcesIdentified" value="Other">
+                                <label for="bs10">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                        <p class="note-text">Document specific bias examples and severity in additional notes</p>
+                    </div>
+                </section>
+
+                <!-- Validation Processes -->
+                <section id="validation" class="section">
+                    <h2 class="section-title">Validation Processes</h2>
+
+                    <div class="form-group">
+                        <label for="validationApproach">Validation Approach</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="va1" name="validationApproach" value="Expert panel review">
+                                <label for="va1">Expert panel review</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="va2" name="validationApproach" value="Psychometric analysis">
+                                <label for="va2">Psychometric analysis</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="va3" name="validationApproach" value="Field testing with students">
+                                <label for="va3">Field testing with students</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="va4" name="validationApproach" value="Comparative studies (AI vs. human)">
+                                <label for="va4">Comparative studies (AI vs. human)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="va5" name="validationApproach" value="Cultural validation">
+                                <label for="va5">Cultural validation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="va6" name="validationApproach" value="Curriculum alignment review">
+                                <label for="va6">Curriculum alignment review</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="va7" name="validationApproach" value="Pilot testing">
+                                <label for="va7">Pilot testing</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="va8" name="validationApproach" value="Statistical validation">
+                                <label for="va8">Statistical validation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="va9" name="validationApproach" value="No formal validation">
+                                <label for="va9">No formal validation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="va10" name="validationApproach" value="Other">
+                                <label for="va10">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="subsection-title">Expert Panel Characteristics</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expertPanelSize">Expert Panel Size</label>
+                            <select id="expertPanelSize" name="expertPanelSize">
+                                <option value="">Select Size</option>
+                                <option value="1-2">1-2</option>
+                                <option value="3-5">3-5</option>
+                                <option value="6-10">6-10</option>
+                                <option value="10+">10+</option>
+                                <option value="Not specified">Not specified</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="selectionCriteria">Selection Criteria</label>
+                            <input type="text" id="selectionCriteria" name="selectionCriteria" placeholder="How experts were selected">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expertiseAreas">Expertise Areas</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ea1" name="expertiseAreas" value="Subject matter">
+                                <label for="ea1">Subject matter</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ea2" name="expertiseAreas" value="Cultural">
+                                <label for="ea2">Cultural</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ea3" name="expertiseAreas" value="Educational measurement">
+                                <label for="ea3">Educational measurement</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ea4" name="expertiseAreas" value="AI/Technology">
+                                <label for="ea4">AI/Technology</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ea5" name="expertiseAreas" value="Curriculum">
+                                <label for="ea5">Curriculum</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ea6" name="expertiseAreas" value="Other">
+                                <label for="ea6">Other</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="validationParameters">Validation Parameters</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="vp1" name="validationParameters" value="Difficulty Index (30-70%)">
+                                <label for="vp1">Difficulty Index (Target: 30-70%)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="vp2" name="validationParameters" value="Discrimination Index (≥0.35)">
+                                <label for="vp2">Discrimination Index (Target: ≥0.35)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="vp3" name="validationParameters" value="Distractor Effectiveness (<5%)">
+                                <label for="vp3">Distractor Effectiveness (Target: <5% non-functional)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="vp4" name="validationParameters" value="Content Accuracy (≥80%)">
+                                <label for="vp4">Content Accuracy (Target: ≥80%)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="vp5" name="validationParameters" value="Cultural Appropriateness Scale">
+                                <label for="vp5">Cultural Appropriateness Scale</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="vp6" name="validationParameters" value="Curriculum Alignment Score">
+                                <label for="vp6">Curriculum Alignment Score</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="vp7" name="validationParameters" value="Expert Rating Scale (1-10)">
+                                <label for="vp7">Expert Rating Scale (1-10)</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="vp8" name="validationParameters" value="Student Performance Metrics">
+                                <label for="vp8">Student Performance Metrics</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="vp9" name="validationParameters" value="Other">
+                                <label for="vp9">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                        <p class="note-text">Record actual values achieved and target benchmarks in additional notes</p>
+                    </div>
+                </section>
+
+                <!-- Quality Assessment Results -->
+                <section id="quality-assessment" class="section">
+                    <h2 class="section-title">Quality Assessment Results</h2>
+
+                    <h3 class="subsection-title">Quality Benchmarks Achieved</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="aiVsHumanPerformance">AI vs. Human Performance</label>
+                            <select id="aiVsHumanPerformance" name="aiVsHumanPerformance">
+                                <option value="">Select Comparison</option>
+                                <option value="AI higher">AI higher</option>
+                                <option value="Human higher">Human higher</option>
+                                <option value="No significant difference">No significant difference</option>
+                                <option value="Not compared">Not compared</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="overallQualityRating">Overall Quality Rating</label>
+                            <select id="overallQualityRating" name="overallQualityRating">
+                                <option value="">Select Rating</option>
+                                <option value="Excellent">Excellent</option>
+                                <option value="Good">Good</option>
+                                <option value="Adequate">Adequate</option>
+                                <option value="Poor">Poor</option>
+                                <option value="Not assessed">Not assessed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="accuracyAchievement">Accuracy Achievement</label>
+                            <select id="accuracyAchievement" name="accuracyAchievement">
+                                <option value="">Select Range</option>
+                                <option value="≥80%">≥80%</option>
+                                <option value="60-79%">60-79%</option>
+                                <option value="40-59%">40-59%</option>
+                                <option value="<40%"><40%</option>
+                                <option value="Not measured">Not measured</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="culturalResponsiveness">Cultural Responsiveness</label>
+                            <select id="culturalResponsiveness" name="culturalResponsiveness">
+                                <option value="">Select Level</option>
+                                <option value="High">High</option>
+                                <option value="Moderate">Moderate</option>
+                                <option value="Low">Low</option>
+                                <option value="Not assessed">Not assessed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="keyLimitations">Key Limitations Identified</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="kl1" name="keyLimitations" value="Low initial accuracy rates">
+                                <label for="kl1">Low initial accuracy rates</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="kl2" name="keyLimitations" value="Cultural overgeneralization">
+                                <label for="kl2">Cultural overgeneralization</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="kl3" name="keyLimitations" value="Limited bias detection">
+                                <label for="kl3">Limited bias detection</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="kl4" name="keyLimitations" value="Small sample size">
+                                <label for="kl4">Small sample size</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="kl5" name="keyLimitations" value="Lack of long-term validation">
+                                <label for="kl5">Lack of long-term validation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="kl6" name="keyLimitations" value="Missing expert validation">
+                                <label for="kl6">Missing expert validation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="kl7" name="keyLimitations" value="Insufficient cultural validation">
+                                <label for="kl7">Insufficient cultural validation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="kl8" name="keyLimitations" value="Poor psychometric properties">
+                                <label for="kl8">Poor psychometric properties</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="kl9" name="keyLimitations" value="Limited generalizability">
+                                <label for="kl9">Limited generalizability</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="kl10" name="keyLimitations" value="Other">
+                                <label for="kl10">Other (specify in notes)</label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Additional Notes and Comments -->
+                <section id="additional-notes" class="section">
+                    <h2 class="section-title">Additional Notes & Comments</h2>
+
+                    <div class="form-group">
+                        <label for="mechanismsDescription">Mechanisms Description</label>
+                        <textarea id="mechanismsDescription" name="mechanismsDescription" placeholder="Description of mechanisms and processes for assessment generation and validation..." style="height: 120px;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="uniqueContributions">Unique Contributions</label>
+                        <textarea id="uniqueContributions" name="uniqueContributions" placeholder="Novel contributions, innovations, or significant findings of this study..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="futureResearchNeeds">Future Research Needs</label>
+                        <textarea id="futureResearchNeeds" name="futureResearchNeeds" placeholder="Research gaps identified, future directions suggested by authors..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reviewerComments">Reviewer Comments</label>
+                        <textarea id="reviewerComments" name="reviewerComments" placeholder="Your assessment, critique, connections to other work, overall evaluation..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dataExtractionDate">Data Extraction Date</label>
+                            <input type="date" id="dataExtractionDate" name="dataExtractionDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="reviewerId">Reviewer ID</label>
+                            <input type="text" id="reviewerId" name="reviewerId" placeholder="Your initials or ID">
+                        </div>
+                    </div>
+
+                    <h3 class="subsection-title">Quality Assurance</h3>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="qa1" name="qualityAssurance" value="All required fields completed">
+                                <label for="qa1">All required fields completed</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="qa2" name="qualityAssurance" value="Cross-referenced with original study">
+                                <label for="qa2">Cross-referenced with original study</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="qa3" name="qualityAssurance" value="Unclear items flagged for review">
+                                <label for="qa3">Unclear items flagged for review</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="qa4" name="qualityAssurance" value="Ready for analysis">
+                                <label for="qa4">Ready for analysis</label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="button-container">
+                    <button type="submit" class="btn btn-primary">
+                        <span id="submitText">Save Study Data</span>
+                        <span id="submitSpinner" class="spinner" style="display: none;"></span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                        Clear Form
+                    </button>
+                </div>
+
+                <div id="messageContainer"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Google Apps Script URL for background sync
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0DHqggv5tYY1yH_CXivTGcP-psX8e2eRm3EHV6ITr7HDEOF2WVYMEUb1xGZv5Wto/exec';
+        
+        // Initialize the application
+        function init() {
+            // Set current date as default
+            document.getElementById('dataExtractionDate').value = new Date().toISOString().split('T')[0];
+            
+            // Initialize navigation
+            updateNavigation();
+            
+            // Initialize progress tracking
+            updateProgress();
+            
+            // Add scroll event listener
+            window.addEventListener('scroll', updateNavigation);
+            
+            // Add form change listener for progress
+            document.getElementById('reviewForm').addEventListener('change', updateProgress);
+            
+            console.log('Systematic Review Tool initialized');
+        }
+
+        // Update navigation active state
+        function updateNavigation() {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 150 && rect.bottom >= 150) {
+                    currentSection = section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const form = document.getElementById('reviewForm');
+            const inputs = form.querySelectorAll('input[required], select[required]');
+            const allInputs = form.querySelectorAll('input, select, textarea');
+            
+            let requiredFilled = 0;
+            let totalFilled = 0;
+            
+            inputs.forEach(input => {
+                if (input.value) requiredFilled++;
+            });
+            
+            allInputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    if (input.checked) totalFilled++;
+                } else if (input.value) {
+                    totalFilled++;
+                }
+            });
+            
+            const requiredProgress = (requiredFilled / inputs.length) * 100;
+            const totalProgress = (totalFilled / allInputs.length) * 100;
+            
+            // Weight required fields more heavily
+            const weightedProgress = (requiredProgress * 0.7) + (totalProgress * 0.3);
+            
+            document.getElementById('progressFill').style.width = `${weightedProgress}%`;
+            document.getElementById('progressText').textContent = `${Math.round(weightedProgress)}% Complete`;
+        }
+
+        // Smooth scroll to section
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const messageClass = type === 'error' ? 'message error' : 'message success';
+            
+            container.innerHTML = `<div class="${messageClass}">${message}</div>`;
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all form data?')) {
+                document.getElementById('reviewForm').reset();
+                // Reset date to current
+                document.getElementById('dataExtractionDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('messageContainer').innerHTML = '';
+                updateProgress();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                console.log('Form cleared');
+            }
+        }
+
+        function getCheckboxValues(name) {
+            const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        // Form handling
+        document.getElementById('reviewForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            console.log('Form submitted!');
+            
+            const submitBtn = document.querySelector('.btn-primary');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.textContent = 'Saving Study Data...';
+            submitSpinner.style.display = 'inline-block';
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Handle checkbox groups
+            data.dataCollectionMethods = getCheckboxValues('dataCollectionMethods');
+            data.itemType = getCheckboxValues('itemType');
+            data.technologiesApproaches = getCheckboxValues('technologiesApproaches');
+            data.promptingStrategy = getCheckboxValues('promptingStrategy');
+            data.inputVariables = getCheckboxValues('inputVariables');
+            data.expertCollaboration = getCheckboxValues('expertCollaboration');
+            data.culturalFramework = getCheckboxValues('culturalFramework');
+            data.languageAccessibility = getCheckboxValues('languageAccessibility');
+            data.biasDetectionMethods = getCheckboxValues('biasDetectionMethods');
+            data.biasSourcesIdentified = getCheckboxValues('biasSourcesIdentified');
+            data.validationApproach = getCheckboxValues('validationApproach');
+            data.expertiseAreas = getCheckboxValues('expertiseAreas');
+            data.validationParameters = getCheckboxValues('validationParameters');
+            data.keyLimitations = getCheckboxValues('keyLimitations');
+            data.qualityAssurance = getCheckboxValues('qualityAssurance');
+            
+            console.log('Form data collected:', data);
+            
+            // Check if required fields are filled
+            if (!data.studyId || !data.title || !data.authors || !data.year || !data.studyDesign || !data.subjectDomain) {
+                console.log('Missing required fields');
+                showMessage('Please fill in all required fields: Study ID, Title, Authors, Year, Study Design, and Subject Domain', 'error');
+                submitBtn.disabled = false;
+                submitText.textContent = 'Save Study Data';
+                submitSpinner.style.display = 'none';
+                return;
+            }
+            
+            // Add metadata
+            data.dateExtracted = new Date().toLocaleDateString();
+            data.timeExtracted = new Date().toLocaleTimeString();
+            
+            console.log('Metadata added, preparing for storage');
+            
+            // Store locally as backup
+            let studies = JSON.parse(localStorage.getItem('systematicReviewData')) || [];
+            studies.push(data);
+            localStorage.setItem('systematicReviewData', JSON.stringify(studies));
+            
+            console.log('Data stored locally');
+            
+            // If Google Script URL is provided, sync to Google Sheets
+            if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_SCRIPT_URL_HERE') {
+                console.log('Syncing to Google Sheets');
+                
+                const formBody = new URLSearchParams();
+                formBody.append('data', JSON.stringify(data));
+
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formBody
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('Raw response:', text);
+                    try {
+                        const result = JSON.parse(text);
+                        console.log('Parsed result:', result);
+                        if (result.result === 'success') {
+                            showMessage('Study data saved successfully to your Google Sheets database!', 'success');
+                            clearForm();
+                        } else {
+                            throw new Error(result.message || 'Unknown error from server');
+                        }
+                    } catch (parseError) {
+                        console.error('JSON parse error:', parseError);
+                        // If JSON parsing fails, but we got a response, treat as success for now
+                        if (text && !text.includes('error')) {
+                            showMessage('Study data saved successfully! (Response format unexpected but data likely saved)', 'success');
+                            clearForm();
+                        } else {
+                            throw new Error('Invalid response from server: ' + text.substring(0, 100));
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error details:', error);
+                    showMessage(`Error syncing to Google Sheets, but data is saved locally.\n\nError: ${error.message}\n\nYou can continue working - data is backed up locally.`, 'error');
+                })
+                .finally(() => {
+                    console.log('Request completed, resetting button');
+                    // Reset button
+                    submitBtn.disabled = false;
+                    submitText.textContent = 'Save Study Data';
+                    submitSpinner.style.display = 'none';
+                });
+            } else {
+                // No Google Script URL provided - just save locally
+                showMessage('Study data saved locally! (Google Sheets integration not configured)', 'success');
+                clearForm();
+                submitBtn.disabled = false;
+                submitText.textContent = 'Save Study Data';
+                submitSpinner.style.display = 'none';
+            }
+        });
+
+        // Initialize the application
+        init();
+    </script>
+</body>
+</html>
